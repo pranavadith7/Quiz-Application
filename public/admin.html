@@ -58,7 +58,7 @@
         import {firebaseConfig} from "./js/config.js";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
         // Your web app's Firebase configuration
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -295,11 +295,14 @@
             </div>
             <div class="col-md-6">
                 <div class="row">
-                    <div class="col-md-9">
+                    <div class="col-md-7">
                         <h1 class="mb-4">Question List</h1>
                     </div>
                     <div class="col-md-3">
-                        <button onclick="window.location.href='users.html'" class="btn btn-danger">View Users</button>
+                        <button onclick="window.location.href='users.html'" class="btn btn-success">View Users</button>
+                    </div>
+                    <div class="col-md-2">
+                        <button onclick="window.location.href='index.html'" class="btn btn-danger">Logout</button>
                     </div>
                 </div>
                 <div class="row">
