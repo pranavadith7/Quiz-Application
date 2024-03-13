@@ -55,7 +55,7 @@
     <!-- Include Firebase SDK -->
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import {firebaseConfig} from "./js/config.js";
+        import { firebaseConfig } from "./js/config.js";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
@@ -193,6 +193,56 @@
 
         // Call the function to fetch and display questions
         fetchQuestions();
+
+        function loadJS() {
+            const script = document.createElement('script');
+            script.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.5/jspdf.debug.js";
+            script.onload = () => {
+                // Once the script is loaded, execute your code
+                document.getElementById('downloadQuestions').addEventListener('click', downloadQuestions);
+            };
+            document.head.appendChild(script);
+        }
+        loadJS();
+
+        async function downloadQuestions() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "questions"));
+                const questionsData = [];
+                querySnapshot.forEach(doc => {
+                    const questionData = doc.data();
+                    questionsData.push(questionData);
+                });
+
+                if (questionsData.length === 0) {
+                    alert("No questions found to download.");
+                    return;
+                }
+
+                const pdf = new jsPDF();
+                let y = 10; // Initial Y position for text
+
+                questionsData.forEach((question, index) => {
+                    pdf.text(`Question ${index + 1}: ${question.question}`, 10, y);
+                    y += 10;
+
+                    question.options.forEach(option => {
+                        pdf.text(`- ${option}`, 15, y);
+                        y += 10;
+                    });
+
+                    pdf.text(`Answer: ${question.answer}`, 15, y);
+                    y += 15; // Adding extra space between questions
+                });
+
+                pdf.save('questions.pdf');
+                alert("Questions downloaded successfully!");
+            } catch (error) {
+                console.error("Error downloading questions:", error);
+                alert("Failed to download questions. Please try again later.");
+            }
+        };
+
     </script>
 
     <script>
@@ -295,11 +345,15 @@
             </div>
             <div class="col-md-6">
                 <div class="row">
-                    <div class="col-md-7">
+                    <div class="col-md-6">
                         <h1 class="mb-4">Question List</h1>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <button onclick="window.location.href='users.html'" class="btn btn-success">View Users</button>
+                    </div>
+                    <div class="col-md-2">
+                        <!-- <button onclick="downloadQuestions()" class="btn btn-primary">Download Questions</button> -->
+                        <button id="downloadQuestions" class="btn btn-primary">Download Questions</button>
                     </div>
                     <div class="col-md-2">
                         <button onclick="window.location.href='index.html'" class="btn btn-danger">Logout</button>
