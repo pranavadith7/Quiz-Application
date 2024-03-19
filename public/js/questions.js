@@ -57,7 +57,7 @@
 // ];
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 // let data = [];
 
 window.onload = function (e) {
@@ -82,8 +82,27 @@ window.onload = function (e) {
   // Get a reference to the Firestore service
   const db = getFirestore(app);
 
+  const code = localStorage.getItem("userdata1") ? JSON.parse(localStorage.getItem("userdata1")) : null;
+  // console.log(code);
+
+  // if (code) {
+  //   (async () => {
+  //     const querySnapshot = await getDocs(collection(db, code));
+  //     querySnapshot.forEach((doc) => {
+  //       const d = doc.data();
+  //       console.log(d);
+  //       questions.push(d.questions); // assuming the questions are stored in a property called "questions" in the Firestore document
+  //     });
+  //     areQuestionsLoaded = true;
+  //   })();
+  // } else {
+  //   console.error("No code found in local storage.");
+  // }
+
+
   (async () => {
-    const querySnapshot = await getDocs(collection(db, "questions"));
+    // const querySnapshot = await getDocs(collection(db, "questions"));
+    const querySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
     querySnapshot.forEach((doc) => {
       const d = doc.data();
       console.log(d);

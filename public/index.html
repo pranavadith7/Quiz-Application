@@ -11,16 +11,11 @@
 
 <script type="module">
     // Import the functions you need from the SDKs you need
-    import {firebaseConfig} from "./js/config.js";
+    import { firebaseConfig } from "./js/config.js";
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+    import { getFirestore, collection, getDocs, addDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-
-
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
 
     // Get a reference to the Firestore service
@@ -28,39 +23,56 @@
 
     window.getDocs = getDocs;
     window.collection = collection;
-    window.db = db;    
+    window.db = db;
     window.addDoc = addDoc;
+    window.query = query;
+    window.where = where;
 </script>
 <script>
+
     async function validateLogin() {
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
+        const code = document.getElementById('code').value;
+        localStorage.setItem("userdata1", JSON.stringify(code));
 
         try {
-            const querySnapshot = await getDocs(collection(db, "admin"));
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                localStorage.setItem("userdata", JSON.stringify(data))
-                if (username === data.username && password === data.password) {
-                    // Redirect to another page
-                    window.location.href = "admin.html";
+            const adminQuerySnapshot = await getDocs(collection(db, "admin"));
+            const adminData = adminQuerySnapshot.docs.map(doc => doc.data())[0]; // Assuming there's only one admin
+
+            if (username === adminData.username && password === adminData.password) {
+                // Redirect to admin page
+                localStorage.setItem("userdata", JSON.stringify(adminData));
+                window.location.href = "admin.html";
+            } else {
+                const questionsQuerySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
+
+                if (questionsQuerySnapshot.empty) {
+                    // Code is incorrect, show error message
+                    alert("Incorrect code! Please enter the correct code. There is no quiz for you at the moment");
                 } else {
-                    // If the username and password don't match, add a new user
-                    addUser(username, password);
-                    // Redirect to home page
-                    // window.location.href = "home.html";
+                    // Code is correct, allow login
+                    addUser(username, password, code);
                 }
-            });
+            }
         } catch (e) {
-            console.error("Error querying admin collection: ", e);
+            console.error("Error querying collections: ", e);
         }
     }
 
-    async function addUser(username, password) {
+    // Call the validateLogin function when the form is submitted
+    document.querySelector('form').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission
+        await validateLogin();
+    });
+
+
+    async function addUser(username, password, code) {
         try {
             const docRef = await addDoc(collection(db, "users"), {
                 username: username,
-                password: password
+                password: password,
+                code: code
             });
             console.log("User added with ID: ", docRef.id);
             window.location.href = "home.html";
@@ -81,6 +93,9 @@
 
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
+
+                <label for="code">Quiz Code</label>
+                <input type="text" id="code" name="code" required>
                 <br>
                 <button type="submit" class="login">Login</button>
             </form>

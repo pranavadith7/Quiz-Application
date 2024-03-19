@@ -58,7 +58,7 @@
         import { firebaseConfig } from "./js/config.js";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+        import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
         // Your web app's Firebase configuration
         // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -78,7 +78,8 @@
             questionList.innerHTML = '';
 
             try {
-                const querySnapshot = await getDocs(collection(db, "questions"));
+                // const querySnapshot = await getDocs(collection(db, "questions"));
+                const querySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
                 querySnapshot.forEach((doc) => {
                     const questionData = doc.data();
                     const questionId = doc.id;
@@ -207,7 +208,8 @@
 
         async function downloadQuestions() {
             try {
-                const querySnapshot = await getDocs(collection(db, "questions"));
+                // const querySnapshot = await getDocs(collection(db, "questions"));
+                const querySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
                 const questionsData = [];
                 querySnapshot.forEach(doc => {
                     const questionData = doc.data();
@@ -249,6 +251,8 @@
         // Function to add a new question to the database
         async function addQuestion() {
             const question = document.getElementById('question').value;
+            // const code = document.getElementById('code').value;
+            const code = JSON.parse(localStorage.getItem("userdata1"))
             const options = [
                 document.getElementById('option1').value,
                 document.getElementById('option2').value,
@@ -261,7 +265,8 @@
                 const docRef = await addDoc(collection(db, "questions"), {
                     question: question,
                     options: options,
-                    answer: answer
+                    answer: answer,
+                    code: code
                 });
 
                 console.log("Document written with ID: ", docRef.id);
@@ -274,6 +279,7 @@
 
                 // Clear input fields
                 document.getElementById('question').value = '';
+                // document.getElementById('code').value = '';
                 document.getElementById('option1').value = '';
                 document.getElementById('option2').value = '';
                 document.getElementById('option3').value = '';
@@ -298,6 +304,11 @@
             <div class="col-md-6">
                 <h1 class="mb-4">Add New Question</h1>
                 <form>
+                    <!-- <div class="mb-3">
+                        <label for="code" class="form-label" style="font-weight: bold;">Question Code:</label>
+                        <input type="text" class="form-control" id="code" name="code" required>
+                    </div> -->
+
                     <div class="mb-3">
                         <label for="question" class="form-label" style="font-weight: bold;">Question:</label>
                         <input type="text" class="form-control" id="question" name="question" required>
@@ -382,6 +393,7 @@
         };
         function addOptions() {
             const question = document.getElementById('question').value;
+            // const code = document.getElementById('code').value;
             const option1 = document.getElementById('option1').value;
             const option2 = document.getElementById('option2').value;
             const option3 = document.getElementById('option3').value;

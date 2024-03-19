@@ -81,7 +81,7 @@
         import {firebaseConfig} from "./js/config.js";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+        import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
         // Your web app's Firebase configuration
 
@@ -96,7 +96,8 @@
             const questionList = document.getElementById('questionList');
 
             try {
-                const querySnapshot = await getDocs(collection(db, "questions"));
+                // const querySnapshot = await getDocs(collection(db, "questions"));
+                const querySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
                 querySnapshot.forEach((doc) => {
                     const questionData = doc.data();
                     const questionId = doc.id;
