@@ -69,12 +69,12 @@
         </div>
         <div class="buttons">
             <button class="restart">Replay Quiz</button>
-            <button class="quit">Quit Quiz</button>
+            <button class="quit" id="quitQuizBtn">Quit Quiz</button>
         </div>
     </div>
 
     <script>
-        var areQuestionsLoaded = false; 
+        var areQuestionsLoaded = false;
         var questions = []; 
     </script>
     <script type="module" src="js/questions.js"></script>
@@ -83,12 +83,50 @@
 
 
     <script type="module">
-        import {firebaseConfig} from "./js/config.js";
-
+        import { firebaseConfig } from "./js/config.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+        import { getFirestore, collection, getDocs, updateDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+    
+        window.db = db;
+    
+        // async function updateScore() {
+        //     debugger
+        //     try {
+        //         const username = JSON.parse(localStorage.getItem("username"));
+        //         const score = JSON.parse(sessionStorage.getItem("score"));
+    
+        //         if (username && score) {
+        //             console.log("u&s");
+        //             // const userRef = collection(db, "users").where("username", "==", username);
+        //             const querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", username)));
+        //             console.log(querySnapshot);
+        //             // const querySnapshot = await getDocs(userRef);
+    
+        //             if (!querySnapshot.empty) {
+        //                 console.log("11111111");
+        //                 const doc = querySnapshot.docs[0];
+        //                 console.log(doc);
+        //                 console.log("222222222222");
+        //                 console.log(doc.ref);
+        //                 await updateDoc(doc.ref, { score: score });
+        //                 console.log("User's score updated in Firestore.");
+        //             } else {
+        //                 console.error("User not found in Firestore.");
+        //             }
+        //         } else {
+        //             console.error("Username or score not available.");
+        //         }
+        //     } catch (e) {
+        //         console.error("Error updating user's score in Firestore: ", e);
+        //     }
+        // }
+    
+        // // Add event listener to the Quit Quiz button
+        // const quitQuizBtn = document.getElementById("quitQuizBtn");
+        // quitQuizBtn.addEventListener("click", updateScore);
     </script>
 
 </body>

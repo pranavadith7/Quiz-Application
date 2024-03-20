@@ -81,7 +81,7 @@
         import {firebaseConfig} from "./js/config.js";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+        import { getFirestore, collection, getDocs, query, where, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
         // Your web app's Firebase configuration
 
@@ -119,6 +119,35 @@
                 });
             } catch (e) {
                 console.error("Error fetching questions: ", e);
+            }
+
+            try {
+                const username = JSON.parse(localStorage.getItem("username"));
+                const score = JSON.parse(sessionStorage.getItem("score"));
+    
+                if (username && score) {
+                    console.log("u&s");
+                    // const userRef = collection(db, "users").where("username", "==", username);
+                    const querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", username)));
+                    console.log(querySnapshot);
+                    // const querySnapshot = await getDocs(userRef);
+    
+                    if (!querySnapshot.empty) {
+                        console.log("11111111");
+                        const doc = querySnapshot.docs[0];
+                        console.log(doc);
+                        console.log("222222222222");
+                        console.log(doc.ref);
+                        await updateDoc(doc.ref, { score: score });
+                        console.log("User's score updated in Firestore.");
+                    } else {
+                        console.error("User not found in Firestore.");
+                    }
+                } else {
+                    console.error("Username or score not available.");
+                }
+            } catch (e) {
+                console.error("Error updating user's score in Firestore: ", e);
             }
         }
 

@@ -53,6 +53,7 @@
                 } else {
                     // Code is correct, allow login
                     addUser(username, password, code);
+                    localStorage.setItem("username", JSON.stringify(username));
                 }
             }
         } catch (e) {
