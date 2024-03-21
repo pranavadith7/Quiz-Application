@@ -31,6 +31,10 @@
 <script>
 
     async function validateLogin() {
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const codeInput = document.getElementById('code');
+
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
         const code = document.getElementById('code').value;
@@ -40,25 +44,54 @@
             const adminQuerySnapshot = await getDocs(collection(db, "admin"));
             const adminData = adminQuerySnapshot.docs.map(doc => doc.data())[0]; // Assuming there's only one admin
 
-            if (username === adminData.username && password === adminData.password) {
+            if (username === adminData.username && password === adminData.password && code === "admin") {
+                window.location.href = "administrator.html";
+            }
+            else if (username === adminData.username && password === adminData.password) {
                 // Redirect to admin page
                 localStorage.setItem("userdata", JSON.stringify(adminData));
                 window.location.href = "admin.html";
-            } else {
+            }
+            else {
                 const questionsQuerySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
-
-                if (questionsQuerySnapshot.empty) {
-                    // Code is incorrect, show error message
-                    alert("Incorrect code! Please enter the correct code. There is no quiz for you at the moment");
+                const userQuerySnapshot = await getDocs(query(collection(db, "registration"), where("username", "==", username)));
+                if (!userQuerySnapshot.empty) {
+                    userQuerySnapshot.forEach((doc) => {
+                        const userData = doc.data();
+                        console.log(userData);
+                        const approved = userData.approved;
+                        const dbPassword = userData.password;
+                        if (password === dbPassword) {
+                            if (approved) {
+                                console.log("Username exists and is approved");
+                                if (questionsQuerySnapshot.empty) {
+                                    // Code is incorrect, show error message
+                                    alert("Incorrect code! Please enter the correct code. There is no quiz for you at the moment");
+                                } else {
+                                    // Code is correct, allow login
+                                    addUser(username, password, code);
+                                    localStorage.setItem("username", JSON.stringify(username));
+                                }
+                            } else {
+                                alert("You are not approved by the administrator");
+                                console.log("Username exists but is not approved");
+                            }
+                        }
+                        else {
+                            alert("Wrong Password!");
+                        }
+                    });
                 } else {
-                    // Code is correct, allow login
-                    addUser(username, password, code);
-                    localStorage.setItem("username", JSON.stringify(username));
+                    alert("Username does not exist");
+                    console.log("Username does not exist");
                 }
             }
         } catch (e) {
             console.error("Error querying collections: ", e);
         }
+        usernameInput.value = '';
+        passwordInput.value = '';
+        codeInput.value = '';
     }
 
     // Call the validateLogin function when the form is submitted
@@ -66,7 +99,6 @@
         event.preventDefault(); // Prevent the default form submission
         await validateLogin();
     });
-
 
     async function addUser(username, password, code) {
         try {
@@ -100,6 +132,8 @@
                 <br>
                 <button type="submit" class="login">Login</button>
             </form>
+            <br>
+            <p>Not a user, <span><a href="register.html" style="color: white;">Register here</a></span></p>
         </div>
     </div>
 </body>

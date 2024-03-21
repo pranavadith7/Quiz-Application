@@ -63,7 +63,18 @@ button:hover {
     background-color: #90caf9;
 }
 
+button:disabled {
+    background-color: #808080;
+    color: white;
+    cursor: not-allowed;
+}
+
 .login{
+    font-size: large;
+    font-weight: bold;
+}
+
+.register{
     font-size: large;
     font-weight: bold;
 }

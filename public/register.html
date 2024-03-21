@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <link rel="stylesheet" href="login_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { firebaseConfig } from "./js/config.js";
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, query, where, setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+
+    const app = initializeApp(firebaseConfig);
+
+    // Get a reference to the Firestore service
+    const db = getFirestore(app);
+
+    window.getDocs = getDocs;
+    window.collection = collection;
+    window.db = db;
+    window.addDoc = addDoc;
+    window.query = query;
+    window.where = where;
+    window.setDoc = setDoc;
+    window.doc = doc;
+</script>
+
+<script>
+
+    var uflag = true;
+    var pflag=true;
+
+    async function checkUsernameAvailability(username) {
+        try {
+            const usernameInput = document.getElementById("username");
+            const usernameError = document.getElementById("usernameError");
+            const registerButton = document.getElementById('register');
+
+            const usersRef = await getDocs(query(collection(db, "registration"), where("username", "==", username)));
+            if (!usersRef.empty) {
+                // Username is already taken
+                registerButton.disabled = true;
+                uflag=true;
+                console.log("Username is already taken");
+                usernameInput.style.border = "3px solid red";
+                usernameError.style.display = "block";
+            } else {
+                // Username is available
+                uflag=false;
+                const password = document.getElementById('password').value;
+                const confirm = document.getElementById('confirm').value;
+                if (password == confirm && pflag==false) {
+                    registerButton.disabled = false;
+                }
+                else {
+                    registerButton.disabled = true;
+                }
+                console.log("Username is available");
+                usernameInput.style.border = "3px solid green";
+                usernameError.style.display = "none";
+            }
+        } catch (error) {
+            console.error("Error checking username availability:", error);
+        }
+    }
+
+    async function passwordMatch(confirm) {
+        const password = document.getElementById('password').value;
+        const confirmInput = document.getElementById('confirm');
+        const passwordMatchError = document.getElementById('passwordMatchError');
+        const registerButton = document.getElementById('register');
+        if (password != confirm) {
+            confirmInput.style.border = "3px solid red";
+            passwordMatchError.style.display = "block";
+            registerButton.disabled = true;
+            pflag=true;
+        }
+        else {
+            confirmInput.style.border = "3px solid green";
+            passwordMatchError.style.display = "none";
+            pflag=false;
+            if(uflag==false){
+                registerButton.disabled = false;
+            }
+        }
+    }
+
+    async function validateRegistration() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const name = document.getElementById('name').value;
+
+        try {
+            addUser(name, username, password);
+        } catch (e) {
+            console.error("Error: ", e);
+        }
+    }
+
+    // Call the addUser function when the form is submitted
+    document.querySelector('form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        await validateRegistration();
+    });
+
+    async function addUser(name, username, password) {
+        try {
+            const docRef = await setDoc(doc(db, "registration", username), {
+                name: name,
+                username: username,
+                password: password,
+                approved: false
+            });
+            alert("Registration Successful!");
+            window.location.href = "index.html";
+        } catch (e) {
+            console.error("Error adding user: ", e);
+            alert("Error occurred while registration!");
+        }
+    }
+</script>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Sign Up!</h2>
+            <form onsubmit="event.preventDefault(); validateRegistration();">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required
+                    oninput="checkUsernameAvailability(this.value)">
+                <span id="usernameError" style="color: red; display: none; font-size: smaller;">Username already
+                    taken</span>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+
+                <label for="confirm">Confirm Password</label>
+                <input type="password" id="confirm" name="confirm" required oninput="passwordMatch(this.value)">
+                <span id="passwordMatchError" style="color: red; display: none; font-size: smaller;">Passwords do not
+                    match</span>
+
+                <br>
+                <button type="submit" class="register" id="register" disabled>Register</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>
