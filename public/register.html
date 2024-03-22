@@ -34,7 +34,7 @@
 <script>
 
     var uflag = true;
-    var pflag=true;
+    var pflag = true;
 
     async function checkUsernameAvailability(username) {
         try {
@@ -46,16 +46,16 @@
             if (!usersRef.empty) {
                 // Username is already taken
                 registerButton.disabled = true;
-                uflag=true;
+                uflag = true;
                 console.log("Username is already taken");
                 usernameInput.style.border = "3px solid red";
                 usernameError.style.display = "block";
             } else {
                 // Username is available
-                uflag=false;
+                uflag = false;
                 const password = document.getElementById('password').value;
                 const confirm = document.getElementById('confirm').value;
-                if (password == confirm && pflag==false) {
+                if (password == confirm && pflag == false) {
                     registerButton.disabled = false;
                 }
                 else {
@@ -79,13 +79,13 @@
             confirmInput.style.border = "3px solid red";
             passwordMatchError.style.display = "block";
             registerButton.disabled = true;
-            pflag=true;
+            pflag = true;
         }
         else {
             confirmInput.style.border = "3px solid green";
             passwordMatchError.style.display = "none";
-            pflag=false;
-            if(uflag==false){
+            pflag = false;
+            if (uflag == false) {
                 registerButton.disabled = false;
             }
         }
@@ -111,11 +111,13 @@
 
     async function addUser(name, username, password) {
         try {
+            const admin = document.getElementById('checkbox').checked;
             const docRef = await setDoc(doc(db, "registration", username), {
                 name: name,
                 username: username,
                 password: password,
-                approved: false
+                approved: false,
+                admin: admin,
             });
             alert("Registration Successful!");
             window.location.href = "index.html";
@@ -147,9 +149,16 @@
                 <input type="password" id="confirm" name="confirm" required oninput="passwordMatch(this.value)">
                 <span id="passwordMatchError" style="color: red; display: none; font-size: smaller;">Passwords do not
                     match</span>
+                <div class="form-check">
+                    <input class="checkbox" type="checkbox" value="" id="checkbox">
+                    <label class="checkbox-label" for="checkbox-label">
+                        Register as admin
+                    </label>
+                </div>
 
                 <br>
                 <button type="submit" class="register" id="register" disabled>Register</button>
+                <p>Already a user, <span><a href="index.html" style="color: white;">Login</a></span></p>
             </form>
         </div>
     </div>

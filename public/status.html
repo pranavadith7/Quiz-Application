@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Application</title>
+    <link rel="stylesheet" href="login_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+</head>
+
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { firebaseConfig } from "./js/config.js";
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+
+    const app = initializeApp(firebaseConfig);
+
+    // Get a reference to the Firestore service
+    const db = getFirestore(app);
+
+    window.getDocs = getDocs;
+    window.collection = collection;
+    window.db = db;
+    window.query = query;
+    window.where = where;
+    window.doc = doc;
+    window.getDoc = getDoc;
+</script>
+<script>
+
+    async function validateStatus() {
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        try {
+            const userDocSnapshot = await(getDoc(doc(db, "registration", username)));
+
+            if (userDocSnapshot.exists()) {
+                const userData = userDocSnapshot.data();
+                const dbPassword = userData.password;
+                const approved = userData.approved;
+                const code = userData.code;
+                const admin = userData.admin;
+
+                if (password === dbPassword && admin===true) {
+                    alert(`User approved: ${approved}\nCode: ${code}\nUse the code to login to admin page`);
+                } else if(password === dbPassword) {
+                    alert(`User approved: ${approved}`);
+                }
+                else{
+                    alert("Wrong Password!")
+                }
+            } else {
+                alert("Username does not exist");
+                console.log("Username does not exist");
+            }
+        } catch (e) {
+            console.error("Error querying collections: ", e);
+        }
+        usernameInput.value = '';
+        passwordInput.value = '';
+    }
+
+    // Call the validateStatus function when the form is submitted
+    document.querySelector('form').addEventListener('submit', async (event) => {
+        event.preventDefault(); // Prevent the default form submission
+        await validateStatus();
+    });
+</script>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>View Registration Status</h2>
+            <form onsubmit="event.preventDefault(); validateStatus();">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <br>
+                <button type="submit" class="check">Check Status</button>
+            </form>
+            <br>
+            <p>Sign In, <span><a href="index.html" style="color: white;">Login</a></span></p>
+        </div>
+    </div>
+</body>
+
+</html>

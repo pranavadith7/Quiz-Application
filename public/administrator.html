@@ -57,7 +57,7 @@
         // Import the functions you need from the SDKs you need
         import { firebaseConfig } from "./js/config.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, query, where, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+        import { getFirestore, collection, getDocs, query, where, deleteDoc, doc, updateDoc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -70,6 +70,8 @@
         window.doc = doc;
         window.deleteDoc = deleteDoc;
         window.updateDoc = updateDoc;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
 
         async function fetchUsers() {
             const usersList = document.getElementById('usersList');
@@ -92,6 +94,7 @@
                         const name = usersData.name;
                         const username = usersData.username;
                         const password = usersData.password;
+                        const admin = usersData.admin;
 
                         const usersItem = document.createElement('div');
                         usersItem.classList.add('users-item');
@@ -99,6 +102,7 @@
                     <p><strong>Name:</strong> <span id="name${usersId}">${name}</span></p>
                     <p><strong>Username:</strong> <span id="username${usersId}">${username}</span></p>
                     <p><strong>Password:</strong> <span id="password${usersId}">${password}</span></p>
+                    <p><strong>Admin:</strong> <span id="password${usersId}">${admin}</span></p>
                     <br>
                     <button class="approve-btn btn btn-success" onclick="approveUser('${usersId}')">Approve</button>
                     <button class="delete-btn btn btn-danger" onclick="deleteUser('${usersId}')">Delete</button>
@@ -119,17 +123,46 @@
     </script>
 
     <script>
+
         async function approveUser(userId) {
             try {
                 const userRef = doc(db, "registration", userId);
-                await updateDoc(userRef, {
-                    approved: true
-                });
-                console.log("User approved!");
-                fetchUsers(); // Refresh the user list after approval
+                const userSnapshot = await getDoc(userRef);
+                if (userSnapshot.exists()) {
+                    const userData = userSnapshot.data();
+                    const isAdmin = userData.admin || false; // If admin field does not exist, default to false
+                    await updateDoc(userRef, {
+                        approved: true
+                    });
+                    console.log("User approved!");
+                    fetchUsers(); // Refresh the user list after approval
+
+                    if (isAdmin) {
+                        const code = generateCode();
+                        // Add username and password to admin collection
+                        await setDoc(doc(db, "admin", userData.username), {
+                            username: userData.username,
+                            password: userData.password,
+                            code : code
+                        });
+                        console.log("User added to admin collection");
+
+                        await updateDoc(userRef, {
+                            code: code
+                        });
+                        console.log("Code added to registration collection");
+                    }
+                } else {
+                    console.error("User document not found");
+                }
             } catch (error) {
                 console.error("Error approving user: ", error);
             }
+        }
+
+        function generateCode() {
+            // Generate a random code
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
         }
 
         async function deleteUser(userId) {

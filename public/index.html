@@ -14,7 +14,7 @@
     import { firebaseConfig } from "./js/config.js";
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
+    import { getFirestore, collection, getDocs, addDoc, query, where, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
     const app = initializeApp(firebaseConfig);
 
@@ -27,6 +27,8 @@
     window.addDoc = addDoc;
     window.query = query;
     window.where = where;
+    window.doc = doc;
+    window.getDoc = getDoc;
 </script>
 <script>
 
@@ -41,16 +43,24 @@
         localStorage.setItem("userdata1", JSON.stringify(code));
 
         try {
-            const adminQuerySnapshot = await getDocs(collection(db, "admin"));
-            const adminData = adminQuerySnapshot.docs.map(doc => doc.data())[0]; // Assuming there's only one admin
+            const administratorQuerySnapshot = await (getDoc(doc(db, "admin", "admin")));
+            const administratorData = administratorQuerySnapshot.data();
 
-            if (username === adminData.username && password === adminData.password && code === "admin") {
+            const adminQuerySnapshot = await (getDoc(doc(db, "admin", username)));
+
+            if (username === administratorData.username && password === administratorData.password && code === "admin") {
                 window.location.href = "administrator.html";
             }
-            else if (username === adminData.username && password === adminData.password) {
-                // Redirect to admin page
-                localStorage.setItem("userdata", JSON.stringify(adminData));
-                window.location.href = "admin.html";
+            else if (adminQuerySnapshot.exists()) {
+                adminData = adminQuerySnapshot.data();
+                if (password === adminData.password && code === adminData.code) {
+                    // Redirect to admin page
+                    localStorage.setItem("userdata", JSON.stringify(adminData));
+                    window.location.href = "admin.html";
+                }
+                else{
+                    alert("Wrong Password or quiz code!");
+                }
             }
             else {
                 const questionsQuerySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
@@ -134,6 +144,7 @@
             </form>
             <br>
             <p>Not a user, <span><a href="register.html" style="color: white;">Register here</a></span></p>
+            <p>Check registration status / quiz code, <span><a href="status.html" style="color: white;">View status</a></span></p>
         </div>
     </div>
 </body>
