@@ -61,7 +61,7 @@ import { getFirestore, collection, getDocs, query, where } from 'https://www.gst
 // let data = [];
 
 window.onload = function (e) {
-  console.log("questions");
+  // console.log("questions");
   // firebase
 
   // Your web app's Firebase configuration
@@ -105,7 +105,7 @@ window.onload = function (e) {
     const querySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
     querySnapshot.forEach((doc) => {
       const d = doc.data();
-      console.log(d);
+      // console.log(d);
       questions.push(d)
     });
     areQuestionsLoaded = true;

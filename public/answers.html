@@ -78,7 +78,7 @@
 
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import {firebaseConfig} from "./js/config.js";
+        import { firebaseConfig } from "./js/config.js";
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
@@ -96,6 +96,10 @@
             const questionList = document.getElementById('questionList');
 
             try {
+
+                let userAnswers = JSON.parse(sessionStorage.getItem("userAnswers"));
+                // console.log(userAnswers);
+
                 // const querySnapshot = await getDocs(collection(db, "questions"));
                 const querySnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
                 querySnapshot.forEach((doc) => {
@@ -104,6 +108,14 @@
                     const question = questionData.question;
                     const options = questionData.options;
                     const answer = questionData.answer;
+                    let index = userAnswers.findIndex(array => array.question === question);
+                    let color = "black"
+                    if (userAnswers[index].userAnswer === answer) {
+                        color = "green";
+                    }
+                    else {
+                        color = "red";
+                    }
 
                     const questionItem = document.createElement('div');
                     questionItem.classList.add('question-item');
@@ -113,7 +125,8 @@
                             ${options.map((option, index) => `<li>${option}</li>`).join('')}
                         </ul>
                         <br>
-                        <p><strong>Answer:</strong> <span id="answer_${questionId}">${answer}</span></p>
+                        <p><strong>Your Answer:</strong> <span id="user_answer_${questionId}" style="color:${color};">${userAnswers[index].userAnswer}</span></p>
+                        <p><strong>Correct Answer:</strong> <span id="answer_${questionId}">${answer}</span></p>
                         `;
                     questionList.appendChild(questionItem);
                 });
@@ -124,20 +137,20 @@
             try {
                 const username = JSON.parse(localStorage.getItem("username"));
                 const score = JSON.parse(sessionStorage.getItem("score"));
-    
+
                 if (username && score) {
-                    console.log("u&s");
+                    // console.log("u&s");
                     // const userRef = collection(db, "users").where("username", "==", username);
                     const querySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", username)));
-                    console.log(querySnapshot);
+                    // console.log(querySnapshot);
                     // const querySnapshot = await getDocs(userRef);
-    
+
                     if (!querySnapshot.empty) {
-                        console.log("11111111");
+                        // console.log("11111111");
                         const doc = querySnapshot.docs[0];
-                        console.log(doc);
-                        console.log("222222222222");
-                        console.log(doc.ref);
+                        // console.log(doc);
+                        // console.log("222222222222");
+                        // console.log(doc.ref);
                         await updateDoc(doc.ref, { score: score });
                         console.log("User's score updated in Firestore.");
                     } else {
