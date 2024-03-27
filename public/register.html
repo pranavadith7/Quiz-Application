@@ -93,11 +93,12 @@
 
     async function validateRegistration() {
         const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
         const name = document.getElementById('name').value;
 
         try {
-            addUser(name, username, password);
+            addUser(name, email, username, password);
         } catch (e) {
             console.error("Error: ", e);
         }
@@ -109,12 +110,13 @@
         await validateRegistration();
     });
 
-    async function addUser(name, username, password) {
+    async function addUser(name, email, username, password) {
         try {
             const admin = document.getElementById('checkbox').checked;
             const docRef = await setDoc(doc(db, "registration", username), {
                 name: name,
                 username: username,
+                email: email,
                 password: password,
                 approved: false,
                 admin: admin,
@@ -141,6 +143,9 @@
                     oninput="checkUsernameAvailability(this.value)">
                 <span id="usernameError" style="color: red; display: none; font-size: smaller;">Username already
                     taken</span>
+
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
 
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
