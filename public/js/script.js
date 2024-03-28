@@ -171,6 +171,7 @@ function showResult() {
     let scoreTag = '<span>You got  <p> ' + userScore + ' </p>  out of  <p> ' + questions.length + ' </p></span>';
     scoreText.innerHTML = scoreTag;  //adding new span tag inside score_Text
     sessionStorage.setItem("score", JSON.stringify(userScore));
+    sessionStorage.setItem("totalQuestions", JSON.stringify(questions.length));
 }
 
 function startTimer(time) {

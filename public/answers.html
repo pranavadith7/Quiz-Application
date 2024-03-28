@@ -64,6 +64,8 @@
         <div class="row">
             <div class="col-md-11">
                 <h1 class="mb-4">Answers</h1>
+                <h4></h4>
+                <button class="btn btn-primary" onclick="handlePrint()">Print Answers</button>
             </div>
             <div class="col-md-1">
                 <button onclick="window.location.href='index.html'" class="btn btn-danger">Logout</button>
@@ -75,6 +77,14 @@
         </div>
         <br>
     </div>
+
+    <script type="text/javascript">
+        const handlePrint = () => {
+            var actContents = document.body.innerHTML;
+            document.body.innerHTML = actContents;
+            window.print();
+        }
+    </script>
 
     <script type="module">
         // Import the functions you need from the SDKs you need
@@ -93,6 +103,12 @@
 
         // Function to fetch questions from Firestore and display them
         async function fetchQuestions() {
+
+            const score = JSON.parse(sessionStorage.getItem("score"));
+            const totalQuestions = JSON.parse(sessionStorage.getItem("totalQuestions"));
+            const scoreElement = document.querySelector("h4");
+            scoreElement.textContent = `Score: ${score} / ${totalQuestions}`;
+
             const questionList = document.getElementById('questionList');
 
             try {
@@ -137,6 +153,7 @@
             try {
                 const username = JSON.parse(localStorage.getItem("username"));
                 const score = JSON.parse(sessionStorage.getItem("score"));
+                const totalQuestions = JSON.parse(sessionStorage.getItem("totalQuestions"));
 
                 if (username && score) {
                     // console.log("u&s");
@@ -151,7 +168,7 @@
                         // console.log(doc);
                         // console.log("222222222222");
                         // console.log(doc.ref);
-                        await updateDoc(doc.ref, { score: score });
+                        await updateDoc(doc.ref, { score: score, totalQuestions: totalQuestions });
                         console.log("User's score updated in Firestore.");
                     } else {
                         console.error("User not found in Firestore.");
