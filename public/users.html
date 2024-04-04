@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
     <style>
         body {
             background-color: #f8f9fa;
@@ -55,7 +56,7 @@
     <!-- Include Firebase SDK -->
     <script type="module">
         // Import the functions you need from the SDKs you need
-        import {firebaseConfig} from "./js/config.js";
+        import { firebaseConfig } from "./js/config.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js'
 
@@ -105,6 +106,106 @@
 
         // Call the function to fetch and display questions
         fetchUsers();
+
+        async function performanceAnalytics() {
+            try {
+                // const querySnapshot = await getDocs(collection(db, "users"));
+                const questionSnapshot = await getDocs(query(collection(db, "questions"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
+                document.getElementById('totalQuestions').innerHTML = questionSnapshot.size;
+                document.getElementById('maximumScore').innerHTML = questionSnapshot.size;
+
+                const usersSnapshot = await getDocs(query(collection(db, "users"), where("code", "==", JSON.parse(localStorage.getItem("userdata1")))));
+                document.getElementById('totalAttendees').innerHTML = usersSnapshot.size;
+
+                let highestScore = 0;
+                let lowestScore = questionSnapshot.size;
+                let totalScore = 0;
+                let scoreCount = new Array(questionSnapshot.size + 1).fill(0);
+                usersSnapshot.forEach((doc) => {
+                    const usersData = doc.data();
+                    const usersId = doc.id;
+                    const score = usersData.score;
+                    totalScore += score;
+                    scoreCount[score] += 1;
+                    if (score > highestScore) {
+                        highestScore = score;
+                    }
+                    if (score < lowestScore) {
+                        lowestScore = score;
+                    }
+                });
+                document.getElementById('highestScore').innerHTML = highestScore;
+                document.getElementById('lowestScore').innerHTML = lowestScore;
+                document.getElementById('averageScore').innerHTML = (totalScore / usersSnapshot.size).toFixed(2);
+
+                // chart colors
+                var colors = ['#007bff', '#28a745', '#333333', '#c3e6cb', '#dc3545', '#6c757d'];
+
+                /* large line chart */
+                var chLine = document.getElementById("chLine");
+                let label = [];
+                for (let i = 0; i <= questionSnapshot.size; i++) {
+                    label[i] = i;
+                }
+                // console.log(label);
+                // console.log(scoreCount);
+
+                var chartData = {
+                    labels: label,
+                    datasets: [{
+                        data: scoreCount,
+                        backgroundColor: 'transparent',
+                        borderColor: colors[4],
+                        borderWidth: 4,
+                        pointBackgroundColor: colors[4]
+                    }
+                    ]
+                };
+                if (chLine) {
+                    new Chart(chLine, {
+                        type: 'line',
+                        data: chartData,
+                        options: {
+                            scales: {
+                                xAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'Score'
+                                    },
+                                    ticks: {
+                                        beginAtZero: true,
+                                    }
+                                }],
+                                yAxes: [{
+                                    scaleLabel: {
+                                        display: true,
+                                        labelString: 'No. of Quiz takers'
+                                    },
+                                    ticks: {
+                                        beginAtZero: true,
+                                        min: 0,
+                                        max: questionSnapshot.size,
+                                        stepSize: 1,
+                                    }
+                                }]
+                            },
+                            legend: {
+                                display: false
+                            },
+                            responsive: true
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error("Error fetching users: ", e);
+            }
+        }
+
+        window.lifefun = performanceAnalytics;
+
+        // Call the function to fetch and display questions
+        performanceAnalytics();
+
     </script>
 
 </head>
@@ -116,6 +217,49 @@
                 <h1 class="mb-4">Users List</h1>
                 <div id="usersList">
                     <!-- Questions will be dynamically added here -->
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="mb-0">Performance Analytics</h1>
+                    <button onclick="window.location.href='index.html'" class="btn btn-danger">Logout</button>
+                </div>
+                <!-- <h1 class="mb-4">Performance Analytics</h1> -->
+                <div id="performanceAnalytics" class="table-responsive">
+                    <table class="table table-bordered border-danger" style="text-align: center;">
+                        <thead>
+                            <tr>
+                                <th scope="col">Total Questions</th>
+                                <th scope="col">Maximum Score</th>
+                                <th scope="col">Total Attendees</th>
+                                <th scope="col">Highest Score</th>
+                                <th scope="col">Lowest Score</th>
+                                <th scope="col">Average Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td scope="row" id="totalQuestions"></td>
+                                <td id="maximumScore"></td>
+                                <td id="totalAttendees"></td>
+                                <td id="highestScore"></td>
+                                <td id="lowestScore"></td>
+                                <td id="averageScore"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="container">
+                    <div class="row my-2">
+                        <div class="col-md-12 py-1">
+                            <div class="card">
+                                <div class="card-body">
+                                    <canvas id="chLine"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
